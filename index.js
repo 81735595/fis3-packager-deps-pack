@@ -131,7 +131,7 @@ module.exports = function(ret, pack, settings, opt) {
       patterns = [patterns];
     }
 
-    var pid = (ns ? ns + connector : '') + 'p' + index;
+    var pid = (ns ? ns + connector : '') + subpath.slice(1); //'p' + index;
     var pkg = fis.file.wrap(path.join(root, subpath));
 
     if (typeof ret.src[pkg.subpath] !== 'undefined') {
@@ -173,10 +173,12 @@ module.exports = function(ret, pack, settings, opt) {
         })
       }
 
-      if (!packed[file.subpath] && file.rExt === pkg.rExt) {
-        packed[file.subpath] = true;
+      var packedId = pkg.subpath + ':' + file.subpath;
+      if (!packed[packedId] && file.rExt === pkg.rExt) {
+        packed[packedId] = true;
         filtered.push(file);
       }
+
     }
 
     var content = '';
@@ -187,7 +189,6 @@ module.exports = function(ret, pack, settings, opt) {
     filtered.forEach(function (file) {
       var id = file.getId();
 
-      if (ret.map.res[id]) {
         var c = file.getContent();
 
         // 派送事件
@@ -226,11 +227,12 @@ module.exports = function(ret, pack, settings, opt) {
 
         content += prefix + c;
 
-        ret.map.res[id].pkg = pid;
+        if (ret.map.res[id]) {
+          ret.map.res[id].pkg = pid;
+        }
         requires = requires.concat(file.requires);
         requireMap[id] = true;
         has.push(id);
-      }
     });
 
     if (has.length) {
